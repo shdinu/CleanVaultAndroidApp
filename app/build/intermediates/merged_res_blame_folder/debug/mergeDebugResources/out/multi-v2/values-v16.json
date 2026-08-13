@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.example.cleanvault.app-mergeDebugResources-47:/values-v16/values-v16.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\it_di\\.gradle\\caches\\transforms-4\\eb146e70a51123e871fec10dc381004a\\transformed\\core-1.12.0\\res\\values-v16\\values-v16.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "65",
+                        "endOffsets": "116"
+                    }
+                }
+            ]
+        }
+    ]
+}
