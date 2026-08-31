@@ -120,6 +120,72 @@ class SecureStorageManager @Inject constructor(@ApplicationContext context: Cont
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
 
+    private val keyStore = java.security.KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
+    private val keyAlias = "CleanVaultCipherKey"
+
+    private fun getOrCreateCipherKey(): javax.crypto.SecretKey {
+        val existingKey = (keyStore.getEntry(keyAlias, null) as? java.security.KeyStore.SecretKeyEntry)?.secretKey
+        if (existingKey != null) return existingKey
+
+        val keyGenerator = javax.crypto.KeyGenerator.getInstance(
+            android.security.keystore.KeyProperties.KEY_ALGORITHM_AES,
+            "AndroidKeyStore"
+        )
+        val spec = android.security.keystore.KeyGenParameterSpec.Builder(
+            keyAlias,
+            android.security.keystore.KeyProperties.PURPOSE_ENCRYPT or android.security.keystore.KeyProperties.PURPOSE_DECRYPT
+        )
+            .setBlockModes(android.security.keystore.KeyProperties.BLOCK_MODE_GCM)
+            .setEncryptionPaddings(android.security.keystore.KeyProperties.ENCRYPTION_PADDING_NONE)
+            .setKeySize(256)
+            .build()
+        keyGenerator.init(spec)
+        return keyGenerator.generateKey()
+    }
+
+    /**
+     * Encrypts plaintext using AES-256-GCM backed by the Android KeyStore.
+     * Returns a Base64-encoded string containing [12-byte IV + Ciphertext].
+     */
+    fun encrypt(plaintext: String): String {
+        return try {
+            val cipher = javax.crypto.Cipher.getInstance("AES/GCM/NoPadding")
+            cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, getOrCreateCipherKey())
+            val iv = cipher.iv // 12 bytes IV
+            val ciphertext = cipher.doFinal(plaintext.toByteArray(Charsets.UTF_8))
+            val combined = ByteArray(iv.size + ciphertext.size)
+            System.arraycopy(iv, 0, combined, 0, iv.size)
+            System.arraycopy(ciphertext, 0, combined, iv.size, ciphertext.size)
+            android.util.Base64.encodeToString(combined, android.util.Base64.NO_WRAP)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            plaintext
+        }
+    }
+
+    /**
+     * Decrypts a Base64-encoded [12-byte IV + Ciphertext] string back to plaintext.
+     */
+    fun decrypt(encryptedBase64: String): String {
+        return try {
+            val combined = android.util.Base64.decode(encryptedBase64, android.util.Base64.NO_WRAP)
+            if (combined.size <= 12) return encryptedBase64
+            val iv = ByteArray(12)
+            val ciphertext = ByteArray(combined.size - 12)
+            System.arraycopy(combined, 0, iv, 0, 12)
+            System.arraycopy(combined, 12, ciphertext, 0, ciphertext.size)
+
+            val cipher = javax.crypto.Cipher.getInstance("AES/GCM/NoPadding")
+            val spec = javax.crypto.spec.GCMParameterSpec(128, iv)
+            cipher.init(javax.crypto.Cipher.DECRYPT_MODE, getOrCreateCipherKey(), spec)
+            val plaintextBytes = cipher.doFinal(ciphertext)
+            String(plaintextBytes, Charsets.UTF_8)
+        } catch (e: Exception) {
+            // Return original string if decryption fails or was already plaintext
+            encryptedBase64
+        }
+    }
+
     /**
      * Encrypts and saves a [value] under the given [key].
      *

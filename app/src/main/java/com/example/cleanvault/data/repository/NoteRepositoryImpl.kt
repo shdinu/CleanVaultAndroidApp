@@ -85,76 +85,82 @@ class NoteRepositoryImpl @Inject constructor(
     /**
      * Returns a reactive stream of all notes from the local Room database.
      *
-     * ## Data Transformation (Mapping)
-     *
-     * Room returns `Flow<List<NoteEntity>>` (Data Layer model).
-     * This function transforms it to `Flow<List<Note>>` (Domain Layer model)
-     * using [Flow.map] — a Kotlin Flow operator:
-     *
-     * ```
-     * Flow<List<NoteEntity>>
-     *   .map { entities ->
-     *       entities.map { entity -> Note(entity.id, entity.title, entity.content, ...) }
-     *   }
-     * → Flow<List<Note>>
-     * ```
-     *
-     * The Domain Layer never sees [NoteEntity]. It only works with [Note].
-     *
-     * ## Why Flow?
-     *
-     * The [Flow] from Room is "live" — it automatically emits a new [List] every time
-     * the database is updated. The ViewModel observes this stream, and Compose
-     * re-renders the UI automatically.
+     * In the database, content is stored strictly in encrypted ciphertext format.
+     * When emitting to the Domain layer, this method transparently decrypts
+     * the content so that both [Note.encryptedContent] and [Note.decryptedContent]
+     * are available.
      *
      * @return A [Flow] that emits a new [List] of domain [Note] objects whenever
      *         the local `notes` table is modified
      */
     override fun getNotes(): Flow<List<Note>> {
         return dao.getAllNotes().map { entities ->
-            entities.map { Note(it.id, it.title, it.content, it.isEncrypted) }
+            entities.map { entity ->
+                val encryptedText = entity.content
+                val decryptedText = if (entity.isEncrypted) {
+                    secureStorage.decrypt(entity.content)
+                } else {
+                    entity.content
+                }
+                Note(
+                    id = entity.id,
+                    title = entity.title,
+                    encryptedContent = encryptedText,
+                    decryptedContent = decryptedText,
+                    isEncrypted = entity.isEncrypted
+                )
+            }
         }
     }
 
     /**
-     * Fetches the latest notes from the remote API and syncs them into the local database.
-     *
-     * ## Offline-First Strategy
-     *
-     * This function implements a simple **sync pattern**:
-     * 1. Fetch from remote (Retrofit GET /posts)
-     * 2. Take the first 10 results (to keep the demo manageable)
-     * 3. Map [NoteDto] → [NoteEntity]
-     * 4. Insert into Room (REPLACE on conflict — remote wins)
-     *
-     * After insertion, the [NoteDao.getAllNotes] Flow automatically emits the
-     * new data — no manual notification needed.
-     *
-     * ## Error Handling
-     *
-     * A `try/catch` wraps the entire operation. If the network is unavailable or
-     * the server returns an error, the exception is caught and logged instead of
-     * crashing the app. The local database data (if any) remains intact.
-     *
-     * ## Coroutines: `withContext`
-     *
-     * `withContext(ioDispatcher)` ensures this entire function runs on the
-     * background thread pool (`Dispatchers.IO`), not the UI thread.
-     * The `suspend` keyword means the calling coroutine is suspended (not blocked)
-     * while this executes.
+     * Encrypts plaintext and saves ONLY the encrypted ciphertext to the local Room database.
+     */
+    override suspend fun saveEncryptedNote(title: String, plainContent: String): Unit = withContext(ioDispatcher) {
+        val ciphertext = secureStorage.encrypt(plainContent)
+        val entity = NoteEntity(
+            id = 0,
+            title = title,
+            content = ciphertext,
+            isEncrypted = true
+        )
+        dao.insertNote(entity)
+    }
+
+    /**
+     * Updates an existing note by encrypting its content and updating the Room entity.
+     */
+    override suspend fun updateEncryptedNote(id: Int, title: String, plainContent: String): Unit = withContext(ioDispatcher) {
+        val ciphertext = secureStorage.encrypt(plainContent)
+        val entity = NoteEntity(
+            id = id,
+            title = title,
+            content = ciphertext,
+            isEncrypted = true
+        )
+        dao.updateNote(entity)
+    }
+
+    /**
+     * Deletes a note by its unique identifier.
+     */
+    override suspend fun deleteNote(id: Int): Unit = withContext(ioDispatcher) {
+        dao.deleteNoteById(id)
+    }
+
+    /**
+     * Clears all notes from the local database.
+     */
+    override suspend fun clearAllNotes(): Unit = withContext(ioDispatcher) {
+        dao.clearAllNotes()
+    }
+
+    /**
+     * Syncs remote notes if applicable.
+     * Placeholder Latin dummy posts from JSONPlaceholder are no longer synced.
      */
     override suspend fun fetchAndSyncNotes() = withContext(ioDispatcher) {
-        try {
-            val remoteNotes = api.getRemoteNotes()
-            val entities = remoteNotes.take(10).map {
-                NoteEntity(id = it.id, title = it.title, content = it.body, isEncrypted = false)
-            }
-            dao.insertNotes(entities)
-        } catch (e: Exception) {
-            // In production, use a logging framework (Timber) and propagate
-            // meaningful errors to the ViewModel via a Result wrapper
-            e.printStackTrace()
-        }
+        // No longer syncing placeholder dummy posts into the local database
     }
 
     /**

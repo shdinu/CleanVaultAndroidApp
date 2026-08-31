@@ -29,6 +29,7 @@
 8. [How to Build & Run](#how-to-build--run)
 9. [Dependencies](#dependencies)
 10. [Frequently Asked Questions (Intern Edition)](#frequently-asked-questions-intern-edition)
+11. [☕ Support / Buy Me a Coffee](#-support--buy-me-a-coffee)
 
 ---
 
@@ -506,5 +507,28 @@ cd CleanVaultAndroidApp
 │  Security      │  AES-256-GCM via Android KeyStore             │
 └────────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## ☕ Support / Buy Me a Coffee
+
+If you found this project helpful or learned something new, consider buying me a coffee to support my work!
+
+<div align="center">
+
+<img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=upi%3A%2F%2Fpay%3Fpa%3Dsh.dinu%40okicici%26pn%3DCleanVault%26cu%3DINR" alt="UPI QR Code - Buy Me A Coffee" width="200" height="200" />
+
+<br/>
+
+**Scan with any UPI App**  
+*(Google Pay, PhonePe, Paytm, BHIM, Cred, etc.)*
+
+```
+UPI ID: sh.dinu@okicici
+```
+
+</div>
+
+---
 
 *Built with ❤️ to demonstrate modern Android development best practices.*

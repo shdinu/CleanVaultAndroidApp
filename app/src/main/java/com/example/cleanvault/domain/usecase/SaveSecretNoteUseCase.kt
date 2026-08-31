@@ -99,5 +99,6 @@ class SaveSecretNoteUseCase @Inject constructor(
     suspend operator fun invoke(key: String, secret: String) {
         require(secret.isNotBlank()) { "Secret cannot be blank" }
         repository.saveEncryptedSecret(key, secret)
+        repository.saveEncryptedNote(title = "Secret Key ($key)", plainContent = secret)
     }
 }

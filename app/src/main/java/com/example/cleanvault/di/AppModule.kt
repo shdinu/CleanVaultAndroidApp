@@ -172,7 +172,9 @@ object AppModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
-        return Room.databaseBuilder(context, AppDatabase::class.java, "vault.db").build()
+        return Room.databaseBuilder(context, AppDatabase::class.java, "vault.db")
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     /**

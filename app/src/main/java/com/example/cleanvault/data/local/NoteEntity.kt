@@ -76,13 +76,14 @@ import androidx.room.PrimaryKey
  */
 @Entity(tableName = "notes")
 data class NoteEntity(
-    /** Unique note ID. Acts as the primary key in the SQLite `notes` table. */
-    @PrimaryKey val id: Int,
+    /** Unique note ID. Acts as the primary key in the SQLite `notes` table with autoGenerate. */
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
 
     /** The note's title — stored as a TEXT column. */
     val title: String,
 
-    /** The note's content/body — stored as a TEXT column. */
+    /** The note's encrypted content/ciphertext — stored as a TEXT column. */
     val content: String,
 
     /**
@@ -90,5 +91,5 @@ data class NoteEntity(
      * Stored as INTEGER in SQLite (0 = false, 1 = true).
      * Room handles the Boolean ↔ INTEGER conversion automatically.
      */
-    val isEncrypted: Boolean
+    val isEncrypted: Boolean = true
 )

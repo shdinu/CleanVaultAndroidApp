@@ -62,19 +62,23 @@ package com.example.cleanvault.domain.model
  * @see com.example.cleanvault.domain.usecase.GetNotesUseCase
  */
 data class Note(
-    /** Unique ID of the note. Matches the `id` from the API and the Room database. */
-    val id: Int,
+    /** Unique ID of the note. Matches the `id` from the Room database. */
+    val id: Int = 0,
 
     /** Title of the note, displayed prominently in the UI. */
     val title: String,
 
-    /** Full body/content of the note. May be encrypted depending on [isEncrypted]. */
-    val content: String,
+    /** The encrypted ciphertext of the note. */
+    val encryptedContent: String,
+
+    /** The decrypted plaintext of the note. */
+    val decryptedContent: String,
 
     /**
-     * Flag indicating whether this note's [content] is encrypted.
-     * `true`  → content is ciphertext and should be decrypted before display.
-     * `false` → content is plaintext and can be shown directly.
+     * Flag indicating whether this note is encrypted in storage.
      */
-    val isEncrypted: Boolean
-)
+    val isEncrypted: Boolean = true
+) {
+    /** Backwards-compatible content getter returning decrypted plain text. */
+    val content: String get() = decryptedContent
+}

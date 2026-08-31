@@ -104,6 +104,36 @@ interface NoteRepository {
     suspend fun saveEncryptedSecret(key: String, secret: String)
 
     /**
+     * Encrypts the [plainContent] and persists it in the local Room database.
+     * Only the encrypted ciphertext is saved to SQLite.
+     *
+     * @param title        The title/label for the note
+     * @param plainContent The plaintext content to encrypt and store
+     */
+    suspend fun saveEncryptedNote(title: String, plainContent: String)
+
+    /**
+     * Updates an existing note by re-encrypting the [plainContent] and updating the database row.
+     *
+     * @param id           The ID of the note to update
+     * @param title        The new title
+     * @param plainContent The new plaintext content to encrypt and store
+     */
+    suspend fun updateEncryptedNote(id: Int, title: String, plainContent: String)
+
+    /**
+     * Deletes a note by its unique identifier.
+     *
+     * @param id The ID of the note to delete
+     */
+    suspend fun deleteNote(id: Int)
+
+    /**
+     * Clears all notes from local storage.
+     */
+    suspend fun clearAllNotes()
+
+    /**
      * Decrypts and retrieves the secret associated with the given key.
      *
      * The decryption happens transparently via [com.example.cleanvault.data.local.SecureStorageManager].
