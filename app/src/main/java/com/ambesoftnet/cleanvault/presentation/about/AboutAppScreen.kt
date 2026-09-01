@@ -1,5 +1,6 @@
 package com.ambesoftnet.cleanvault.presentation.about
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,7 +13,9 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Widgets
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -33,6 +36,7 @@ data class ArchitectureHighlight(
 fun AboutAppScreen(
     onMenuClick: () -> Unit
 ) {
+    val uriHandler = LocalUriHandler.current;
     val highlights = listOf(
         ArchitectureHighlight(
             title = "Clean Architecture",
@@ -81,6 +85,12 @@ fun AboutAppScreen(
             description = "Type-safe HTTP REST client integration configured with suspend functions and background thread dispatchers.",
             icon = Icons.Default.CheckCircle,
             tag = "Networking"
+        ),
+        ArchitectureHighlight(
+            title = "Privacy Policy, Terms and conditions",
+            description = "Read the terms and conditions for using this app or the source code of this app.",
+            icon = Icons.Default.Warning,
+            tag = "Read"
         )
     )
 
@@ -160,14 +170,28 @@ fun AboutAppScreen(
                             ) {
                                 Text(
                                     text = item.title,
+                                    modifier = Modifier.weight(1f), // <-- Add weight here
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
                                 )
+
+                                Spacer(modifier = Modifier.width(8.dp)) // Optional spacing
+
                                 SuggestionChip(
-                                    onClick = { },
-                                    label = { Text(item.tag, style = MaterialTheme.typography.labelSmall) }
+                                    onClick = {
+                                        if (item.icon == Icons.Default.Warning) {
+                                            uriHandler.openUri("https://github.com/shdinu/CleanVaultAndroidApp/blob/main/PRIVACY_POLICY.md")
+                                        }
+                                    },
+                                    label = {
+                                        Text(
+                                            item.tag,
+                                            style = MaterialTheme.typography.labelSmall
+                                        )
+                                    }
                                 )
                             }
+
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = item.description,
@@ -178,7 +202,6 @@ fun AboutAppScreen(
                     }
                 }
             }
-
             item {
                 Spacer(modifier = Modifier.height(16.dp))
             }
