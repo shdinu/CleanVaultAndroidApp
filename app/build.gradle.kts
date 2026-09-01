@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.cleanvault"
+    namespace = "com.ambesoftnet.cleanvault"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.ambesoft.cleanvault"
+        applicationId = "com.ambesoftnet.cleanvault"
         minSdk = 26
         targetSdk = 34
         versionCode = 1

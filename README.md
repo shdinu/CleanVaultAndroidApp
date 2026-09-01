@@ -100,7 +100,7 @@ Build System     : Gradle (Kotlin DSL)
 ## Package Structure
 
 ```
-com.example.cleanvault/
+com.ambesoftnet.cleanvault/
 │
 ├── CleanVaultApp.kt                    ← Application entry point (@HiltAndroidApp)
 ├── MainActivity.kt                     ← Single Activity host for Compose

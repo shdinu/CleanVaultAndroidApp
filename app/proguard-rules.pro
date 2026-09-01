@@ -21,7 +21,7 @@
 -keepclassmembers class * {
     @com.google.gson.annotations.SerializedName <fields>;
 }
--keep class com.example.cleanvault.data.remote.** { *; }
+-keep class com.ambesoftnet.cleanvault.data.remote.** { *; }
 
 # Room
 -keep class androidx.room.** { *; }
@@ -29,7 +29,7 @@
 -keep class * extends androidx.room.RoomDatabase
 -keep @androidx.room.Entity class * { *; }
 -keep @androidx.room.Dao interface * { *; }
--keep class com.example.cleanvault.data.local.** { *; }
+-keep class com.ambesoftnet.cleanvault.data.local.** { *; }
 
 # Dagger / Hilt
 -keep class * extends dagger.hilt.android.internal.managers.ViewComponentManager$FragmentContextWrapper { *; }
